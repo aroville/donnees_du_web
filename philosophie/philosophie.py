@@ -7,9 +7,7 @@ from flask import Flask, render_template, session, request, redirect, flash
 from getpage import getPage
 
 app = Flask(__name__)
-
 app.secret_key = "TODO: mettre une valeur secrète ici"
-
 
 @app.route('/', methods=['GET'])
 def index():
@@ -55,8 +53,7 @@ def move():
         return redirect('/')
 
     next_title = request.form['next']
-    valid_move = next_title in getPage(session['title'])[1]
-    if not valid_move:
+    if not next_title in getPage(session['title'])[1]:
         flash('invalid move !', 'danger')
         return redirect('/game')
 
@@ -69,6 +66,7 @@ def move():
 
     session['score'] += 1
     session['title'] = next_title
+
     return redirect('/game')
 
 

@@ -2,58 +2,59 @@
 # -*- coding: utf-8 -*-
 
 # Ne pas se soucier de ces imports
-import setpath
 from bs4 import BeautifulSoup
 from json import loads
-from urllib.request import urlopen
-from urllib.parse import urlencode, unquote
-
+from urllib.parse import unquote
+import requests
 
 # Si vous écrivez des fonctions en plus, faites-le ici
+API = "https://fr.wikipedia.org/w/api.php"
+params = {
+  'format'      : 'json',
+  'action'      : 'parse',
+  'prop'        : 'text',
+  'redirects'   : 'true'
+}
+
 cache = {}
+redirects = {}
 
 def getJSON(page):
-    params = urlencode({
-      'format': 'json',
-      'action': 'parse',
-      'prop': 'text',
-      'redirects': 'true',
-      'page': page})
-    API = "https://fr.wikipedia.org/w/api.php"
-    response = urlopen(API + "?" + params)
-    return response.read().decode('utf-8')
+    global params
+    params['page'] = page
+    return requests.get(API, params=params).text
 
 
 def getRawPage(page):
-    parsed = loads(getJSON(page))['parse']
     try:
+        parsed = loads(getJSON(page))['parse']
         title = parsed['title']
         content = parsed['text']['*']
         return title, content
     except KeyError:
-        return None, None
+        return None, []
 
 
 def internal_link(href):
-    if not href:
+    if not href or '/wiki/' not in href:
         return False
-    if '/wiki/' not in href:
-        return False
-    if 'redlink=1' in href:
-        return False
-    if 'API_' in href:
-        return False
-    if ':' in href:
-        return False
-    return True
+    return not('redlink=1' in href or 'API_' in href or ':' in href)
 
 
 def getPage(page):
-    try:
-        title, content = getRawPage(page)
-    except KeyError as e:
+    page = page.lower()
+    if page in redirects.keys():
+        page = redirects[page]
+
+    if page in cache.keys():
+        return page, cache[page]
+
+    title, content = getRawPage(page)
+    if title is None:
         return None, []
 
+    title = title.lower()
+    redirects[page] = title
     if title in cache.keys():
         return title, cache[title]
 
@@ -76,7 +77,7 @@ def getPage(page):
                 href = href.split('#')[0]
                 href = unquote(href)
                 if href not in hrefs:
-                    hrefs.append(unquote(href))
+                    hrefs.append(href)
 
     cache[title] = hrefs
     return title, hrefs
