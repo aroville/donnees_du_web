@@ -4,7 +4,7 @@
 # Ne pas se soucier de ces imports
 from bs4 import BeautifulSoup
 from json import loads
-from urllib.parse import unquote
+from urllib.parse import unquote, urlencode
 import requests
 
 # Si vous écrivez des fonctions en plus, faites-le ici
@@ -22,7 +22,8 @@ redirects = {}
 def getJSON(page):
     global params
     params['page'] = page
-    return requests.get(API, params=params).text
+    print(API + '?' + urlencode(params))
+    return requests.get(API + '?' + urlencode(params)).text
 
 
 def getRawPage(page):
@@ -42,7 +43,6 @@ def internal_link(href):
 
 
 def getPage(page):
-    page = page.lower()
     if page in redirects.keys():
         page = redirects[page]
 
@@ -53,7 +53,6 @@ def getPage(page):
     if title is None:
         return None, []
 
-    title = title.lower()
     redirects[page] = title
     if title in cache.keys():
         return title, cache[title]
@@ -80,6 +79,7 @@ def getPage(page):
                     hrefs.append(href)
 
     cache[title] = hrefs
+    print(cache)
     return title, hrefs
 
 
