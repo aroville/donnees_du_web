@@ -22,7 +22,6 @@ redirects = {}
 def getJSON(page):
     global params
     params['page'] = page
-    print(API + '?' + urlencode(params))
     return requests.get(API + '?' + urlencode(params)).text
 
 
@@ -79,7 +78,6 @@ def getPage(page):
                     hrefs.append(href)
 
     cache[title] = hrefs
-    print(cache)
     return title, hrefs
 
 
@@ -89,7 +87,7 @@ if __name__ == '__main__':
 
     # Voici des idées pour tester vos fonctions :
     # pprint(getJSON("Utilisateur:A3nm/INF344"))
-    pprint(getPage("Utilisateur:A3nm/INF344"))
+    print(getPage("Utilisateur:A3nm/INF344"))
     # pprint(getPage("philosophique"))
     # print(getRawPage("Histoire"))
 

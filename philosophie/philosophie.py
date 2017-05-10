@@ -47,21 +47,23 @@ def game():
     return render_template('game.html', title=title, links=links)
 
 
+
 @app.route('/move', methods=['POST'])
 def move():
     if request.form['action'] == 'Restart':
         return redirect('/')
 
     next_title = request.form['next']
-    if not next_title in getPage(session['title'])[1]:
-        flash('invalid move !', 'danger')
-        return redirect('/game')
-
     previous_score = int(request.form['previous_score'])
     scores_match = previous_score == session['score']
-    titles_match = next_title == session['title']
-    if not (scores_match or titles_match):
-        flash('progression in another tab !', 'danger')
+    if not scores_match:
+        titles_match = next_title == session['title']
+        if not titles_match:
+            flash('progression in another tab !', 'danger')
+            return redirect('/game')
+
+    if not next_title in getPage(session['title'])[1]:
+        flash('invalid move !', 'danger')
         return redirect('/game')
 
     session['score'] += 1
